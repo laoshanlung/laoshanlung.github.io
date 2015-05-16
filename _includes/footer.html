@@ -1,0 +1,73 @@
+<nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <!-- Begin Pagination -->
+    {% assign range = paginator | calculate_page_range %}
+
+    {% if range %}
+    <ul class="pagination">
+      {% if paginator.previous_page %}
+        {% if paginator.previous_page == 1 %}
+          <li><a href="/"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+        {% else %}
+          <li><a href="{{ paginator.previous_page_path }}"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+        {% endif %}
+      {% else %}
+        <li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+      {% endif %}
+
+      {% for count in range %}
+        {% if count == paginator.page %}
+          <li class="active">
+            <a href="#">{{ count }}</a>
+          </li>
+        {% else %}
+          <li>
+            <a href="{{ count | generate_page_url }}">{{ count }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if paginator.next_page %}
+        <li><a href="{{ paginator.next_page_path }}"><span class="glyphicon glyphicon-chevron-right"></span></a></li>
+      {% else %}
+        <li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>
+      {% endif %}
+    </ul>
+    {% endif %}
+    <!-- End pagination -->
+    
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="/">Home</a>
+      </li>
+      <!-- Begin related posts -->
+      {% if page.related %}
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Related posts <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         {% for relate in page.related %}
+          <li>
+          <a href="{{ relate[1] }}">{{ relate[0] }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endif %}
+      <!-- End related posts -->
+
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         {% for tag in site.all_tags %}
+          <li>
+          <a href="{{ tag | tag_url }}">{{ tag }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      <!-- End tags -->
+    </ul>
+  </div><!-- /.navbar-collapse -->
+</nav>

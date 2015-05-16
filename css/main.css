@@ -1,0 +1,20 @@
+body {
+  padding: 0px 0px 60px 0px;
+}
+
+.label-info, .label-default {
+  margin-right: 5px;
+}
+
+.label-info a {
+  color: white;
+}
+
+.label-info a:hover {
+  text-decoration: none
+}
+
+ul.pagination {
+  margin: 9px 0px 0px 0px;
+  float: right;
+}

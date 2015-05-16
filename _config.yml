@@ -1,0 +1,17 @@
+name: Tan Nguyen
+highlighter: rouge
+markdown: redcarpet
+paginate: 10
+links: [
+{
+  "title": "Home",
+  "url": "/index.html"
+},
+{
+  "title": "About",
+  "url": "/about.html"
+}
+]
+tag_page_layout: tag_page
+tag_page_dir: tag
+all_tags: ['javascript']
