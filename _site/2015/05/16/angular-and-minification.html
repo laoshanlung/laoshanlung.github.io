@@ -103,7 +103,7 @@
 
 <p>It looks normal at first, but after running through minification, it becomes this. And Angular starts complaining that it can&#39;t find <code>e</code> provider. Of course it can&#39;t.</p>
 
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">root</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">$timeout</span><span class="p">,</span> <span class="nx">$window</span><span class="p">,</span> <span class="nx">utils</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">root</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="p">{</span>
     <span class="p">...</span>
     <span class="na">controller</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">t</span><span class="p">){</span>
