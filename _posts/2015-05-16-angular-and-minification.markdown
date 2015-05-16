@@ -48,7 +48,7 @@ var root = function($timeout, $window, utils) {
 It looks normal at first, but after running through minification, it becomes this. And Angular starts complaining that it can't find `e` provider. Of course it can't.
 
 {% highlight javascript %}
-var root = function($timeout, $window, utils) {
+var root = function(a, b, c) {
   return {
     ...
     controller: function(e, t){
