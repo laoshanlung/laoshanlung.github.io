@@ -1,4 +1,4 @@
-<div class="navbar navbar-default navbar-static-top navbar-inverse" role="navigation">
+<div class="navbar navbar-default navbar-static-top" role="navigation">
   <!-- Brand and toggle get grouped for better mobile display -->
   <div class="navbar-header">
     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -22,6 +22,53 @@
           <a href="{{p['url']}}">{{p['title']}}</a>
         </li>
       {% endfor %}
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         {% for tag in site.all_tags %}
+          <li>
+          <a href="{{ tag | tag_url }}">{{ tag }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      <!-- End tags -->
     </ul>
+    <!-- Begin Pagination -->
+    {% assign range = paginator | calculate_page_range %}
+
+    {% if range %}
+    <ul class="pagination">
+      {% if paginator.previous_page %}
+        {% if paginator.previous_page == 1 %}
+          <li><a href="/"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+        {% else %}
+          <li><a href="{{ paginator.previous_page_path }}"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+        {% endif %}
+      {% else %}
+        <li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+      {% endif %}
+
+      {% for count in range %}
+        {% if count == paginator.page %}
+          <li class="active">
+            <a href="#">{{ count }}</a>
+          </li>
+        {% else %}
+          <li>
+            <a href="{{ count | generate_page_url }}">{{ count }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if paginator.next_page %}
+        <li><a href="{{ paginator.next_page_path }}"><span class="glyphicon glyphicon-chevron-right"></span></a></li>
+      {% else %}
+        <li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>
+      {% endif %}
+    </ul>
+    {% endif %}
+    <!-- End pagination -->
   </div><!-- /.navbar-collapse -->
 </div>

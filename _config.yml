@@ -14,4 +14,4 @@ links: [
 ]
 tag_page_layout: tag_page
 tag_page_dir: tag
-all_tags: ['javascript', 'angular']
+all_tags: ['javascript', 'angular', 'python', 'flask']
