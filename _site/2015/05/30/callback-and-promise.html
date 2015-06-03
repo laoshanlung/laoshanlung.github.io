@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Callback and promise</title>
+<meta name="viewport" content="width=device-width">
+<link rel="shortcut icon" href="/favicon.ico?v=2" />
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/flatly.min.css">
+
+<!-- syntax highlighting CSS -->
+<link rel="stylesheet" href="/css/pygments.native.css">
+<link rel="stylesheet" href="/css/syntax.css">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="/css/main.css">
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-static-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">Tan Nguyen</a>
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav ">
+      
+        
+        <li>
+        
+          <a href="/index.html">Home</a>
+        </li>
+      
+        
+        <li>
+        
+          <a href="/about.html">About</a>
+        </li>
+      
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         
+          <li>
+          <a href="/tag/javascript.html">javascript</a>
+          </li>
+          
+          <li>
+          <a href="/tag/angular.html">angular</a>
+          </li>
+          
+          <li>
+          <a href="/tag/python.html">python</a>
+          </li>
+          
+          <li>
+          <a href="/tag/flask.html">flask</a>
+          </li>
+          
+        </ul>
+      </li>
+      <!-- End tags -->
+    </ul>
+    <!-- Begin Pagination -->
+    
+
+    
+    <!-- End pagination -->
+  </div><!-- /.navbar-collapse -->
+</div>
+
+      <div class="container">
+        <h2>Callback and promise</h2>
+<p class="meta">
+  <span class="label label-default">30 May 2015</span>
+  
+  <span class="label label-info">
+  <a href="/tag/javascript.html">javascript</a>
+  </span>
+  
+</p>
+
+<div class="post">
+<p>Callback is the basic knowledge that every Javascript developer must know no matter what <strong>side</strong> (client or server) they are working on. It is the fundamental of asynchronous IO operations in Javascript. Then, there is Promise which is a specification aiming to hide the complexity and ugliness of callbacks.</p>
+
+<h2>Good old callbacks</h2>
+
+<p>First thing first, when I started with Javascript years ago, the first thing that I learnt was how to use callbacks to listen to events in the browser. When Nodejs came out, callbacks are used everywhere in the core libraries (<code>fs</code> for instance). The first problem that I encountered when using callbacks is how to deal with sequential operations that depend on each other. With normal synchronous operations, it is straightforward</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="k">try</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">result1</span> <span class="o">=</span> <span class="nx">operation1</span><span class="p">();</span>
+  <span class="kd">var</span> <span class="nx">result2</span> <span class="o">=</span> <span class="nx">operation2</span><span class="p">(</span><span class="nx">result1</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">handleError</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
+
+<p>However, this becomes a nightmare with callbacks a.k.a callback hell</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">operation1</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">result1</span><span class="p">){</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+  <span class="nx">operation2</span><span class="p">(</span><span class="nx">result1</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">result2</span><span class="p">){</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+<p>It is not only hard to read but also repetitive in error handling process. Each callback needs to handle error seperately. There are many libraries to help solve this kind of nightmare, I used <code>async</code> few years ago.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">async</span><span class="p">.</span><span class="nx">waterfall</span><span class="p">([</span>
+  <span class="nx">operation1</span><span class="p">,</span>
+  <span class="nx">operation2</span>
+<span class="p">],</span>  <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">result</span><span class="p">){</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span></code></pre></div>
+
+<p>It looks neat, all the errors are handled in one place. The flow is easier to read and follow. But is still not quite satisfied, I wanted something more organized and more OOP. With libraries like <code>async</code>, although I can have a certain level of structure in my code, but I still have to repeatedly call <code>async.waterfall</code> or whatever methods to control the flow. As a lazy person, I don&#39;t want to do that.</p>
+
+<h2>Modern Promises</h2>
+
+<p>Promise is <strong>NOT</strong> a concrete implementation as many people often misunderstand, it is a specification. Promise aims to provide a better way to deal with asynchronous operations. Its main idea is to have asynchronous operations returned an object that has <code>then</code> method instead of relying on callbacks. The <code>then</code> method receives 2 callbacks, one to handle the successful result and the other one to handle error. Considering the above example, with Promise, all the operations can easily be chained together.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">operation1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">operation2</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+  
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">){</span>
+  <span class="nx">handleError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span></code></pre></div>
+
+<p>One of the most annoying things with callback is that it does not support <code>throw</code> statement, when I want to terminate the execution flow, I must return the callback with the first param set to the error (NodeJS convention). With Promise, I can simply throw the error just like I do with synchronous code</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">operation1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">operation2</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nx">MyException</span><span class="p">();</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+  
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">){</span>
+  <span class="c1">// catch MyException here</span>
+<span class="p">});</span></code></pre></div>
+
+<p>In most of Promise implementations, there is a <code>catch</code> method that can be used to catch all the errors.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">operation1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">operation2</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nx">MyException</span><span class="p">();</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">){</span>
+  <span class="c1">// catch MyException here</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">result</span><span class="p">){</span>
+  
+<span class="p">});</span></code></pre></div>
+
+<p>It looks pretty close to the flow of synchrnous code, operations are ran one after another, exceptions are handled nicely in one place.</p>
+
+<h2>Common mistakes in asynchronous programming (and promise)</h2>
+
+<h3>Wrong context</h3>
+
+<p>Context is important, especially in closures</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">MyClass</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  
+<span class="p">}</span>
+
+<span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">method1</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// this here refers to the current MyClass instance</span>
+  <span class="k">return</span> <span class="nx">someAsyncStuff</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="c1">// inside this closure, this refers to the global object (global in Nodejs and window in Browser)</span>
+  <span class="p">});</span>
+<span class="p">}</span></code></pre></div>
+
+<p>To solve this, the simplest way is to save the context to a different variable <code>self = this</code> is the common way. Another way is to use <code>bind</code> but it comes with a huge performance problem since <code>bind</code> is <strong>sooo slow</strong></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">method1</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">someAsyncStuff</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="c1">// now this is my instance</span>
+  <span class="p">}.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+<span class="p">}</span></code></pre></div>
+
+<h3>Incorrectly return promises or forget to return</h3>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">method2</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">result</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+  
+<span class="p">});</span></code></pre></div>
+
+<p>This is one typical example that developers who are new to promise often make (or even experienced developers who simply forget to return). It is obvious that <code>data</code> will be <code>undefined</code> because the function provided to <code>then</code> returns <code>undefined</code> (in Javascript missing return statement is the same as returning <code>undefined</code>). The correct code should be</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method2</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Well it looks a bit ugly, let&#39;s refactor it using <code>bind</code> although it is slow</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">)).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Much better now, but <code>bind</code> is a huge performance hurdle when using is highload environment.</p>
+
+<h3>Wrong chain</h3>
+
+<p>There are cases that I need to generate a promise chain based on some certain conditions.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">();</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">condition</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2A</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2B</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">print</span><span class="p">);</span></code></pre></div>
+
+<p>If not understand promises, one would expect that <code>instance.method1</code> runs first, then depending on the <code>condition</code>, <code>method2A</code> or <code>method2B</code> will run after that. And finally, <code>print</code>. In reality, only <code>print</code> runs. The thing is that calling <code>then</code> multiple times on a promise object does not result in sequential execution of closures. Instead, the last call will set the closure for that promise. So, the above code should be refactored to</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">();</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">condition</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">promise</span> <span class="o">=</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2A</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">promise</span> <span class="o">=</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2B</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">print</span><span class="p">);</span></code></pre></div>
+
+<p>By assigning a new promise object, <code>then</code> can work properly. In some promise implementation, there are tools to support this kind of sequential execution, <code>when</code> for example</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">sequence</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'when/sequence'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">tasks</span> <span class="o">=</span> <span class="p">[];</span>
+
+<span class="nx">tasks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method1</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">condition</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">tasks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2A</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">tasks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">method2B</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">instance</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="nx">tasks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">print</span><span class="p">);</span>
+
+<span class="nx">sequence</span><span class="p">(</span><span class="nx">tasks</span><span class="p">);</span></code></pre></div>
+
+<p>There are many other silly mistakes that I made during my years of Javascript development, but those 3 are the most common ones that I can remember for now.</p>
+
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    // Required: on line below, replace text in quotes with your forum shortname
+    var disqus_shortname = "tan-nguyen";
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+      </div>
+
+    </body>
+</html>
