@@ -41,7 +41,7 @@ async.waterfall([
 });
 {% endhighlight %}
 
-It looks neat, all the errors are handled in one place. The flow is easier to read and follow. But is still not quite satisfied, I wanted something more organized and more OOP. With libraries like `async`, although I can have a certain level of structure in my code, but I still have to repeatedly call `async.waterfall` or whatever methods to control the flow. As a lazy person, I don't want to do that.
+It looks neat, all the errors are handled in one place. The flow is easier to read and follow. But it is still not quite satisfied, I wanted something more organized and more OOP. With libraries like `async`, although I can have a certain level of structure in my code, but I still have to repeatedly call `async.waterfall` or whatever methods to control the flow. As a lazy person, I don't want to do that.
 
 ## Modern Promises
 Promise is **NOT** a concrete implementation as many people often misunderstand, it is a specification. Promise aims to provide a better way to deal with asynchronous operations. Its main idea is to have asynchronous operations returned an object that has `then` method instead of relying on callbacks. The `then` method receives 2 callbacks, one to handle the successful result and the other one to handle error. Considering the above example, with Promise, all the operations can easily be chained together.
@@ -137,7 +137,7 @@ var result = instance.method1().then(instance.method2.bind(instance)).then(funct
 });
 {% endhighlight %}
 
-Much better now, but `bind` is a huge performance hurdle when using is highload environment.
+Much better now, but `bind` is a huge performance hurdle when using in highload environment.
 
 ### Wrong chain
 There are cases that I need to generate a promise chain based on some certain conditions.
