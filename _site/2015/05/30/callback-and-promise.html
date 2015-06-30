@@ -125,7 +125,7 @@
   <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="k">return</span> <span class="nx">handleError</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
 <span class="p">});</span></code></pre></div>
 
-<p>It looks neat, all the errors are handled in one place. The flow is easier to read and follow. But is still not quite satisfied, I wanted something more organized and more OOP. With libraries like <code>async</code>, although I can have a certain level of structure in my code, but I still have to repeatedly call <code>async.waterfall</code> or whatever methods to control the flow. As a lazy person, I don&#39;t want to do that.</p>
+<p>It looks neat, all the errors are handled in one place. The flow is easier to read and follow. But it is still not quite satisfied, I wanted something more organized and more OOP. With libraries like <code>async</code>, although I can have a certain level of structure in my code, but I still have to repeatedly call <code>async.waterfall</code> or whatever methods to control the flow. As a lazy person, I don&#39;t want to do that.</p>
 
 <h2>Modern Promises</h2>
 
@@ -210,7 +210,7 @@
   <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
 <span class="p">});</span></code></pre></div>
 
-<p>Much better now, but <code>bind</code> is a huge performance hurdle when using is highload environment.</p>
+<p>Much better now, but <code>bind</code> is a huge performance hurdle when using in highload environment.</p>
 
 <h3>Wrong chain</h3>
 

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>OOP in Angular</title>
+<meta name="viewport" content="width=device-width">
+<link rel="shortcut icon" href="/favicon.ico?v=2" />
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/flatly.min.css">
+
+<!-- syntax highlighting CSS -->
+<link rel="stylesheet" href="/css/pygments.native.css">
+<link rel="stylesheet" href="/css/syntax.css">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="/css/main.css">
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-static-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">Tan Nguyen</a>
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav ">
+      
+        
+        <li>
+        
+          <a href="/index.html">Home</a>
+        </li>
+      
+        
+        <li>
+        
+          <a href="/about.html">About</a>
+        </li>
+      
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         
+          <li>
+          <a href="/tag/javascript.html">javascript</a>
+          </li>
+          
+          <li>
+          <a href="/tag/angular.html">angular</a>
+          </li>
+          
+          <li>
+          <a href="/tag/python.html">python</a>
+          </li>
+          
+          <li>
+          <a href="/tag/flask.html">flask</a>
+          </li>
+          
+        </ul>
+      </li>
+      <!-- End tags -->
+    </ul>
+    <!-- Begin Pagination -->
+    
+
+    
+    <!-- End pagination -->
+  </div><!-- /.navbar-collapse -->
+</div>
+
+      <div class="container">
+        <h2>OOP in Angular</h2>
+<p class="meta">
+  <span class="label label-default">28 Jun 2015</span>
+  
+  <span class="label label-info">
+  <a href="/tag/javascript.html">javascript</a>
+  </span>
+  
+  <span class="label label-info">
+  <a href="/tag/angular.html">angular</a>
+  </span>
+  
+</p>
+
+<div class="post">
+<p>Almost everything in Angular is not object oriented by default. While it has its own advantages by ignoring OOP, I often find myself in a situation that I really miss object oriented structure, mainly for reusing code. Thanks to the flexibility of the dependency injection system (<code>$inject</code> in particular), I can easily use classes and inheritance in Angular</p>
+
+<p>I was a big fan of Backbone. So, I will use Backbone to illustrate the possibility of reusing code using <code>$inject</code> to manage dependencies. I will borrow the <code>extend</code> method of Backbone to support inheritance. There are other libraries designed solely for this purpose such as <a href="http://ejohn.org/blog/simple-javascript-inheritance/">Class.extend</a></p>
+
+<h2>Controllers and Services</h2>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Component</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">deps</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">object</span><span class="p">(</span><span class="nb">Object</span><span class="p">.</span><span class="nx">getPrototypeOf</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">$inject</span><span class="p">,</span> <span class="nx">_</span><span class="p">.</span><span class="nx">values</span><span class="p">(</span><span class="nx">arguments</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span> <span class="o">=</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">;</span></code></pre></div>
+
+<p>Let&#39;s start with the most general &quot;class&quot;, this <code>Component</code> class does only 1 thing, extracts the dependencies and stores it in <code>deps</code> property. The use of <code>Object.getPrototypeOf(this).constructor.$inject</code> is to access the <code>$inject</code> property set in each controller or service class. Then it borrows <code>extend</code> method of <code>Backbone.Model</code> to facilitate inheritance.</p>
+
+<p>Next, let&#39;s write some services</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Service</span> <span class="o">=</span> <span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+<span class="p">},</span> <span class="p">{</span>
+  <span class="s1">'$inject'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'anotherFactory'</span><span class="p">]</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">MyService</span> <span class="o">=</span> <span class="nx">Service</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="na">ask</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">deps</span><span class="p">[</span><span class="s1">'anotherFactory'</span><span class="p">].</span><span class="nx">ask</span><span class="p">(</span><span class="s1">'How are you?'</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Simple inheritance! with <code>$inject</code> set to <code>[&#39;anotherFactory&#39;]</code> for all service classes. Then, some controllers</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Controller</span> <span class="o">=</span> <span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  
+<span class="p">},</span> <span class="p">{</span>
+  <span class="s1">'$inject'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'myFactory'</span><span class="p">,</span> <span class="s1">'myService'</span><span class="p">]</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">MyController</span> <span class="o">=</span> <span class="nx">Controller</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="na">hello</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">deps</span><span class="p">[</span><span class="s1">'myFactory'</span><span class="p">].</span><span class="nx">hello</span><span class="p">(</span><span class="s1">'Tan Nguyen'</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="na">ask</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">deps</span><span class="p">[</span><span class="s1">'myService'</span><span class="p">].</span><span class="nx">ask</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Again, basic inheritance with different dependencies and 2 methods to use them. Now, I can wire everything together in an angular module.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="s1">'myApp'</span><span class="p">,</span> <span class="p">[])</span>
+<span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="s1">'anotherFactory'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">ask</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">question</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">question</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">()</span> <span class="o">+</span> <span class="s1">'?'</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+<span class="p">.</span><span class="nx">factory</span><span class="p">(</span><span class="s1">'myFactory'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">hello</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">[</span><span class="s1">'Hello, '</span><span class="p">,</span> <span class="nx">name</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">})</span>
+<span class="p">.</span><span class="nx">service</span><span class="p">(</span><span class="s1">'myService'</span><span class="p">,</span> <span class="nx">MyService</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">controller</span><span class="p">(</span><span class="s1">'myController'</span><span class="p">,</span> <span class="nx">MyController</span><span class="p">);</span></code></pre></div>
+
+<p>The two factories above (<code>anotherFactory</code> and <code>myFactory</code>) can also be rewritten to use OOP style (later in this post). With this kind of setup, I can easily share code between my controllers and services and at the same time enjoy other benefits of OOP such as polymorphism.</p>
+
+<h2>Factories and Directives</h2>
+
+<p>I often return objects from my factories, so I will group factories together with directives because they are similar in term of the return data type.</p>
+
+<p>Factories and Directives are a bit tricky to use object oriented style in the sense that their respective angular methods (<code>angular.factory</code> and <code>angular.directive</code>) expect a <a href="http://atendesigngroup.com/blog/factory-functions-javascript">factory function</a> instead of a <a href="http://pivotallabs.com/javascript-constructors-prototypes-and-the-new-keyword/">constructor function</a> in the case of controller and service.</p>
+
+<p>In simple term, when dealing with controller or service, Angular will call <code>new</code> on the function that we pass to <code>angular.controller</code> or <code>angular.service</code>. However, when using <code>angular.factory</code> or <code>angular.directive</code>, Angular simply invokes the provided function and uses the result.</p>
+
+<p>So, I need to do some tricks to make OOP work properly.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Directive</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">$inject</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">getPrototypeOf</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">$inject</span><span class="p">;</span>
+
+  <span class="kd">var</span> <span class="nx">factory</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">deps</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">object</span><span class="p">(</span><span class="nx">$inject</span><span class="p">,</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">arguments</span><span class="p">));</span>
+    <span class="nx">self</span><span class="p">.</span><span class="nx">deps</span> <span class="o">=</span> <span class="nx">deps</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="na">link</span><span class="p">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">link</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">self</span><span class="p">),</span>
+      <span class="na">template</span><span class="p">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">template</span>
+      <span class="c1">// other directive-specific functions</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+
+  <span class="nx">factory</span><span class="p">.</span><span class="nx">$inject</span> <span class="o">=</span> <span class="nx">$inject</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="nx">factory</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="nx">Directive</span><span class="p">.</span><span class="nx">extend</span> <span class="o">=</span> <span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">MyDirective</span> <span class="o">=</span> <span class="nx">Directive</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="na">link</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">$scope</span><span class="p">,</span> <span class="nx">$element</span><span class="p">,</span> <span class="nx">attributes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$scope</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">deps</span><span class="p">[</span><span class="s1">'myFactory'</span><span class="p">].</span><span class="nx">hello</span><span class="p">(</span><span class="s1">'Tan Nguyen'</span><span class="p">);</span>
+  <span class="p">},</span>
+
+  <span class="na">template</span><span class="p">:</span> <span class="s1">'&lt;h1&gt;{{ name }}&lt;/h1&gt;'</span>
+<span class="p">},</span> <span class="p">{</span>
+  <span class="s1">'$inject'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'myFactory'</span><span class="p">]</span>
+<span class="p">});</span>
+
+<span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="s1">'myApp'</span><span class="p">,</span> <span class="p">[])</span>
+<span class="p">.</span><span class="nx">directive</span><span class="p">(</span><span class="s1">'myDirective'</span><span class="p">,</span> <span class="k">new</span> <span class="nx">MyDirective</span><span class="p">());</span></code></pre></div>
+
+<p>So, normally, when we use <code>new</code> the constructor function will return <code>this</code> which is the instance object. In order to satisfy Angular, I can just return another factory function which in turn returns the expected object after pre-processing all the dependencies. However, the trick here is to return a new object containing the modified (bound) version of some of the necessary methods for a directive such as <code>link</code> and <code>compile</code>. The main reason is because the original context is lost during the process of compiling and linking directives. Therefore, even if I <code>return self</code>, <code>this</code> inside my <code>link</code> function still refers to <code>Window</code> object.</p>
+
+<p>This is just a demo version with a naive implementation, in the real production version, I will have to properly pre-process all the methods available to directive and all the properties.</p>
+
+<p>For factories, the process is somewhat similar but much simpler</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">Factory</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">$inject</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">getPrototypeOf</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">$inject</span> <span class="o">||</span> <span class="p">[];</span>
+
+  <span class="kd">var</span> <span class="nx">factory</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">deps</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">object</span><span class="p">(</span><span class="nx">$inject</span><span class="p">,</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">arguments</span><span class="p">));</span>
+    <span class="nx">self</span><span class="p">.</span><span class="nx">deps</span> <span class="o">=</span> <span class="nx">deps</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="nx">self</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">factory</span><span class="p">.</span><span class="nx">$inject</span> <span class="o">=</span> <span class="nx">$inject</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="nx">factory</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="nx">Factory</span><span class="p">.</span><span class="nx">extend</span> <span class="o">=</span> <span class="nx">Component</span><span class="p">.</span><span class="nx">extend</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">MyFactory</span> <span class="o">=</span> <span class="nx">Factory</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+  <span class="na">hello</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s1">'Hello, '</span><span class="p">,</span> <span class="nx">name</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>In this case I don&#39;t need to mess around with the context because Angular is nice enough to keep the original one.</p>
+
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    // Required: on line below, replace text in quotes with your forum shortname
+    var disqus_shortname = "tan-nguyen";
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+      </div>
+
+    </body>
+</html>

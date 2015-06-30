@@ -3,7 +3,7 @@ layout: default
 title: About me
 ---
 
-I am a full-stack web developer from Vietnam. I am currently taking my Master's Programme in Computer Engineering/Software Engineering at Åbo Akademi University, Turku, Finland.
+I am a web developer from Vietnam. I am currently writing my thesis for the Master's Programme in Software Engineering at Åbo Akademi University, Turku, Finland.
 <br/>
 <br/>
 <a href="http://stackoverflow.com/users/386378/tan-nguyen"><img src="http://i.imgur.com/nNGNUQc.png" /></a>
