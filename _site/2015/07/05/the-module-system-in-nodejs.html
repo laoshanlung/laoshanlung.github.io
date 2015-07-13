@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>The module system in Nodejs</title>
+<meta name="viewport" content="width=device-width">
+<link rel="shortcut icon" href="/favicon.ico?v=2" />
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/flatly.min.css">
+
+<!-- syntax highlighting CSS -->
+<link rel="stylesheet" href="/css/pygments.native.css">
+<link rel="stylesheet" href="/css/syntax.css">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="/css/main.css">
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-static-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">Tan Nguyen</a>
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav ">
+      
+        
+        <li>
+        
+          <a href="/index.html">Home</a>
+        </li>
+      
+        
+        <li>
+        
+          <a href="/about.html">About</a>
+        </li>
+      
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         
+          <li>
+          <a href="/tag/javascript.html">javascript</a>
+          </li>
+          
+          <li>
+          <a href="/tag/angular.html">angular</a>
+          </li>
+          
+          <li>
+          <a href="/tag/python.html">python</a>
+          </li>
+          
+          <li>
+          <a href="/tag/flask.html">flask</a>
+          </li>
+          
+        </ul>
+      </li>
+      <!-- End tags -->
+    </ul>
+    <!-- Begin Pagination -->
+    
+
+    
+    <!-- End pagination -->
+  </div><!-- /.navbar-collapse -->
+</div>
+
+      <div class="container">
+        <h2>The module system in Nodejs</h2>
+<p class="meta">
+  <span class="label label-default">05 Jul 2015</span>
+  
+  <span class="label label-info">
+  <a href="/tag/javascript.html">javascript</a>
+  </span>
+  
+  <span class="label label-info">
+  <a href="/tag/nodejs.html">nodejs</a>
+  </span>
+  
+</p>
+
+<div class="post">
+<p>The module system in nodejs is very interesting as it is extremely simple but still powerful enough to help developers organize their code. Nodejs encourages the use of modular structure for pretty much everything from a simple utility function or complex model class.</p>
+
+<p>There is a good amount of information in the main <a href="https://nodejs.org/api/modules.html">module page</a>. Therefore, I will not go deep into any of the technical part of it (I probably don&#39;t know that much anyway). </p>
+
+<h2>A short introduction to <code>require</code></h2>
+
+<p>Conceptually, a module is a container for code that can be reused. As the core of the module system is the mighty <code>require</code> function. The easiest way (in my opinion) to understand what is really going on when using <code>require</code> is to use <code>strace</code> to know what is actually done behind the scene.</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">strace -e <span class="nv">trace</span><span class="o">=</span>stat node -e <span class="s2">"require('not_existed')"</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed"</span>, 0x7fff68803198<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed.js"</span>, 0x7fff68803148<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/node_modules/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed"</span>, 0x7fff68803268<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/node_modules/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed"</span>, 0x7fff68803268<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/node_modules/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed"</span>, 0x7fff2fe6c398<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed.js"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed.json"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed.node"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed/index.js"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed/index.json"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/tmp/not_existed/index.node"</span>, 0x7fff2fe6c338<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed"</span>, 0x7fff68803268<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_modules/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed"</span>, 0x7fff68803268<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.node_libraries/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed"</span>, 0x7fff68803268<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed/index.js"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed/index.json"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span>
+stat<span class="o">(</span><span class="s2">"/home/blog/.nvm/v0.10.32/lib/node/not_existed/index.node"</span>, 0x7fff68803208<span class="o">)</span> <span class="o">=</span> -1 ENOENT <span class="o">(</span>No such file or directory<span class="o">)</span></code></pre></div>
+
+<p>One does not need to fully understand everything here to know what is going on. Basically, node has its own rules to look for a module. First, it will go from the current directory (<code>/home/blog</code>) and search for the module, then go up until it reaches the top level (<code>/</code>). Then, it looks into <code>NODE_PATH</code>, in my case, it is only <code>/tmp</code> but we can have multiple paths. And finally, it goes into some global paths including <code>nvm</code> (a small library to manage multiple version of nodejs) paths. In all those paths, node will search for the module in a special folder named <code>node_modules</code> and it can&#39;t be changed and <a href="https://docs.npmjs.com/misc/faq#node-modules-is-the-name-of-my-deity-s-arch-rival-and-a-forbidden-word-in-my-religion-can-i-configure-npm-to-use-a-different-folder">never will be</a>.</p>
+
+<p>Next, for each path, node searches for <code>module_name</code>, <code>module_name.js</code>, <code>module_name.json</code> or <code>module_name.node</code> file. And if it can&#39;t find the file, it starts looking for folders with an index file <code>index.js</code>, <code>index.json</code> or <code>index.node</code>. Once it has found the module, the parsing process kicks in and does its things then the module content is cached so that node will not have to repeat the whole process all over again. All modules are expected to have valid javascript code except <code>.json</code>.</p>
+
+<h2>Why module?</h2>
+
+<p>As a software engineer, I wanted to re-use everything I have every written. It is a best practice to try encapsulating every piece of work when possible and re-use it later.</p>
+
+<h2>How to organize module?</h2>
+
+<p>It depends on many factors, personal preferences, code size, module&#39;s purpose etc... My favorite way is to start a module with the purpose of releasing it as an open-source project later, so I often go with folder and <code>index.js</code> format.</p>
+
+<p>By exposing the module as a folder (with <code>index.js</code> file), I am free to organize the internal structure of the module without affecting other modules that depend on it.</p>
+
+<h2>How to design a module?</h2>
+
+<p>There are many ways to do this, I have seen several ways after few years working with nodejs</p>
+
+<h3>Exposing object or function directly</h3>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// mymodule/index.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">options</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">uppercase</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="p">},</span>
+  <span class="na">greet</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">uppercase</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="s1">'Hello'</span><span class="p">,</span> <span class="nx">name</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// app.js</span>
+<span class="kd">var</span> <span class="nx">mymodule</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./mymodule'</span><span class="p">);</span>
+<span class="nx">mymodule</span><span class="p">.</span><span class="nx">uppercase</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">mymodule</span><span class="p">.</span><span class="nx">greet</span><span class="p">(</span><span class="s1">'Tan'</span><span class="p">));</span></code></pre></div>
+
+<p>The idea is simple, just exposing whatever needed. However, this approach has one limitation. The options set is propagated globally because the module content is cached by nodejs, only one instance of it is returned. This pattern can be used for global utility modules (logging, database connection etc..) which need to have different settings depending on the environment.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="s1">'production'</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">mymodule</span><span class="p">.</span><span class="nx">uppercase</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">mymodule</span><span class="p">.</span><span class="nx">uppercase</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<h3>Exposing factory function</h3>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// mymodule/index.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="p">{</span>
+
+  <span class="p">});</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">greet</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">uppercase</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="p">[</span><span class="s1">'Hello'</span><span class="p">,</span> <span class="nx">name</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// app.js</span>
+<span class="kd">var</span> <span class="nx">mymodule</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./mymodule'</span><span class="p">)({</span><span class="na">uppercase</span><span class="p">:</span> <span class="kc">true</span><span class="p">});</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">mymodule</span><span class="p">.</span><span class="nx">greet</span><span class="p">(</span><span class="s1">'Tan'</span><span class="p">));</span></code></pre></div>
+ 
+
+<p>There is nothing fancy about this, just exposing the factory function to the 3rd party code. By using a factory function, I will have a chance to initialize the module with options provided by 3rd party code. This approach is often used when dealing with simple modules.</p>
+
+<h3>Exposing constructor function</h3>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// mymodule/index.js</span>
+<span class="kd">var</span> <span class="nx">MyModule</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="p">{</span>
+
+  <span class="p">});</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">MyModule</span><span class="p">.</span><span class="nx">prototyp</span><span class="p">.</span><span class="nx">greet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">options</span><span class="p">.</span><span class="nx">uppercase</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="p">[</span><span class="s1">'Hello'</span><span class="p">,</span> <span class="nx">name</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">MyModule</span><span class="p">;</span>
+
+<span class="c1">// app.js</span>
+<span class="kd">var</span> <span class="nx">MyModule</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./mymodule'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MyModule</span><span class="p">({</span><span class="na">uppercase</span><span class="p">:</span> <span class="kc">true</span><span class="p">});</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">greet</span><span class="p">(</span><span class="s1">'Tan'</span><span class="p">));</span></code></pre></div>
+
+<p>This is a more OOP way to organize the module (and is my favorite). This approach enables further code re-use and allows 3rd party code to add more functionalities without breaking Open-Close principle.</p>
+
+<h3>Which one to use?</h3>
+
+<p>For simple modules (utilities, database connection), I often choose factory functions. The main reason is to simplify the module. Another reason is that those modules are pretty much fixed when they are done, it is better to keep them simple.</p>
+
+<p>For more complex stuff (models and controllers), I use constructor functions because they are more flexible, organized and object oriented. Coming from Java background, it is my habit to think in term of classes. I wanted to do something else (like functional programming), but it will take a while to change the way I think.</p>
+
+<p>For the first approach, I have never used it before because I don&#39;t like the idea of globally shared objects (global variables are evil). Accidentally changing the options somewhere in the code base will cause unexpected effects somewhere else.</p>
+
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    // Required: on line below, replace text in quotes with your forum shortname
+    var disqus_shortname = "tan-nguyen";
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+      </div>
+
+    </body>
+</html>
