@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Dependency Injection in Nodejs</title>
+<meta name="viewport" content="width=device-width">
+<link rel="shortcut icon" href="/favicon.ico?v=2" />
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/flatly.min.css">
+
+<!-- syntax highlighting CSS -->
+<link rel="stylesheet" href="/css/pygments.native.css">
+<link rel="stylesheet" href="/css/syntax.css">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="/css/main.css">
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+      <div class="navbar navbar-default navbar-static-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">Tan Nguyen</a>
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav ">
+      
+        
+        <li>
+        
+          <a href="/index.html">Home</a>
+        </li>
+      
+        
+        <li>
+        
+          <a href="/about.html">About</a>
+        </li>
+      
+      <!-- Begin tags -->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tags <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+         
+          <li>
+          <a href="/tag/javascript.html">javascript</a>
+          </li>
+          
+          <li>
+          <a href="/tag/angular.html">angular</a>
+          </li>
+          
+          <li>
+          <a href="/tag/python.html">python</a>
+          </li>
+          
+          <li>
+          <a href="/tag/flask.html">flask</a>
+          </li>
+          
+        </ul>
+      </li>
+      <!-- End tags -->
+    </ul>
+    <!-- Begin Pagination -->
+    
+
+    
+    <!-- End pagination -->
+  </div><!-- /.navbar-collapse -->
+</div>
+
+      <div class="container">
+        <h1>Dependency Injection in Nodejs</h1>
+<p class="meta">
+  <span class="label label-default">01 Sep 2015</span>
+  
+  <span class="label label-info">
+  <a href="/tag/javascript.html">javascript</a>
+  </span>
+  
+  <span class="label label-info">
+  <a href="/tag/nodejs.html">nodejs</a>
+  </span>
+  
+</p>
+
+<div class="post">
+<p>Dependency Injection is not a new concept, it has been around as long as I know how to write code. In one of my side projects where I am using AngularJS for the client-side and good old plain nodejs for the server-side, I realize that having 2 ways of &quot;requiring&quot; dependencies (the Angular way and the CommonJS way) is kind of frustrating and hard to follow. After spending some time thinking, I finally found a solution to bring Angular&#39;s way of injecting dependencies to Nodejs</p>
+
+<p>The idea is simple, I started with how I wanted to write my module using the &quot;imaginary&quot; dependency injection system.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">BaseModel</span><span class="p">(</span><span class="nx">Backbone</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span><span class="p">.</span><span class="nx">extend</span><span class="p">({</span>
+
+    <span class="p">});</span>
+<span class="p">};</span></code></pre></div>
+
+<p>I am a big fan of Backbone, so I will use backbone to create my base model from which all other models will extend. The idea is simple, by using the function name as the module name and the parameters as the dependencies, I can have a simple dependency injection system (not as elegant as Angular&#39;s but it works for my case).</p>
+
+<p>From the prototype, there are 2 things needed to be done</p>
+
+<ol>
+<li>Extract the function name and use it as the module name</li>
+<li>Extract the list of arguments as strings and use them to inject dependencies to the module</li>
+</ol>
+
+<p>Extracting the function name is simple, just call <code>fn.name</code>. Extracting the argument list as strings is a bit trickier. First thing first, I need to somehow get the list of arguments as I specify in the code. The simplest way is to call <code>fn.toString()</code></p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">BaseModel</span><span class="p">(</span><span class="nx">Backbone</span><span class="p">)</span> <span class="p">{};</span>
+<span class="nx">BaseModel</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span> <span class="c1">// will output function BaseModel(Backbone) {}</span></code></pre></div>
+
+<p>Now that I have a string represented my function, the next step is to extract all the arguments. It sounds like a perfect task for Regex. But... I am terrible at Regex, so I googled and found this <a href="http://stackoverflow.com/a/9924463">solution</a>, I am going to use it instead of banging my head against the wall trying to come up with a regex.</p>
+
+<p>After solving those 2 fundamental problems, it&#39;s time to actually write something that can keep track of all the dependencies.</p>
+
+<h2>The injector structure</h2>
+
+<p>At its simpliest form, the injector needs to have the following methods</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">module</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{},</span>
+    <span class="na">inject</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">};</span></code></pre></div>
+
+<ul>
+<li><code>module</code> is to register a new module to the DI system</li>
+<li><code>inject</code> is to get the registered module</li>
+</ul>
+
+<p>The usage is simple, first I need to register something</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">injector</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="s1">'BaseModel'</span><span class="p">,</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./models/base'</span><span class="p">));</span>
+<span class="c1">// or just</span>
+<span class="nx">injector</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="s1">'./models/base'</span><span class="p">));</span></code></pre></div>
+
+<p>Then, I can inject the base model in other part of the project</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">BaseModel</span> <span class="o">=</span> <span class="nx">injector</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="s1">'BaseModel'</span><span class="p">);</span></code></pre></div>
+
+<p>Or use it as a dependency to another module</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">Account</span><span class="p">(</span><span class="nx">BaseModel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">BaseModel</span><span class="p">.</span><span class="nx">extend</span><span class="p">({});</span>
+<span class="p">};</span></code></pre></div>
+
+<h2>Lazy load modules</h2>
+
+<p>One of the problems that I first encounter is how to make sure that all dependencies are resolved before initializing the injected module. I solved this problem by lazy loading all the modules.</p>
+
+<p>When first calling <code>module</code> to register new module, the injector doesn&#39;t really do anything but store the module data in an internal variable</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">_module</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">fn</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+        <span class="nx">name</span> <span class="o">=</span> <span class="nx">fn</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="s1">'Missing name'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// allow overwrite previously defined module</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="p">{</span>
+        <span class="k">delete</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="nx">self</span><span class="p">.</span><span class="nx">_maps</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="na">deps</span><span class="p">:</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">?</span> <span class="nx">getParamNames</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">:</span> <span class="p">[],</span>
+        <span class="na">fn</span><span class="p">:</span> <span class="nx">fn</span>
+    <span class="p">};</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Then, when calling <code>inject</code> to actually get the module, all the dependencies are resolved first using a simple recursive call.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">inject</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="kd">var</span> <span class="nx">mod</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_maps</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+    <span class="kd">var</span> <span class="nx">deps</span> <span class="o">=</span> <span class="nx">mod</span><span class="p">.</span><span class="nx">deps</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">fn</span> <span class="o">=</span> <span class="nx">mod</span><span class="p">.</span><span class="nx">fn</span><span class="p">;</span>
+
+    <span class="kd">var</span> <span class="nx">intersection</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">chain</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">)).</span><span class="nx">intersection</span><span class="p">(</span><span class="nx">deps</span><span class="p">).</span><span class="nx">value</span><span class="p">();</span>
+    <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">without</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">_</span><span class="p">.</span><span class="nx">union</span><span class="p">([</span><span class="nx">deps</span><span class="p">],</span> <span class="nx">intersection</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">remaining</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// pending deps</span>
+        <span class="nx">_</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">remaining</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dep</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="nx">dep</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">resolved</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">deps</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dep</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">_aliases</span><span class="p">[</span><span class="nx">dep</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nx">dep</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_aliases</span><span class="p">[</span><span class="nx">dep</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="nx">resolved</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">dep</span><span class="p">]);</span>
+    <span class="p">});</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">fn</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">resolved</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">fn</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">_modules</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+<span class="p">}</span></code></pre></div>
+
+<h2>Why?</h2>
+
+<p>Using the default CommonJS module in nodejs is great for many things but when it comes to unit tests where I need to mock libraries, it becomes complicated and hard to follow.</p>
+
+<p>For example, imagine that we have to test a project that connects to a Postgresql server. Ideally we will have a library to encapsulate the part that sends queries to Postgresql</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// libs/postgres.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">send</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">query</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Now in some service, we want to send a query</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// services/user.js</span>
+<span class="kd">var</span> <span class="nx">psql</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../libs/postgres'</span><span class="p">);</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">createUser</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// do some stuff</span>
+        <span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="p">...;</span>
+        <span class="k">return</span> <span class="nx">psql</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">query</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Then, we need to write some unit tests that don&#39;t need to connect to the real Postgresql server.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// services/user.spec.js</span>
+<span class="kd">var</span> <span class="nx">psql</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../libs/postgres'</span><span class="p">);</span>
+<span class="nx">psql</span><span class="p">.</span><span class="nx">send</span> <span class="o">=</span> <span class="nx">jasmine</span><span class="p">.</span><span class="nx">createSpy</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">userService</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./user'</span><span class="p">);</span></code></pre></div>
+
+<p>The problem with the above approach is that we have to touch the real postgres module which makes it an unecessary dependency for our tests.</p>
+
+<p>With the DI system, we can break the dependency between the test and the postgres module by providing a mock postgres module.</p>
+
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// libs/postgres.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">postgres</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="na">send</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">query</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// services/user.js</span>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">userService</span><span class="p">(</span><span class="s1">'postgres'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="na">createUser</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// do some stuff</span>
+            <span class="kd">var</span> <span class="nx">query</span> <span class="o">=</span> <span class="p">...;</span>
+            <span class="k">return</span> <span class="nx">psql</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">query</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// services/user.spec.js</span>
+<span class="nx">injector</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span><span class="s1">'postgres'</span><span class="p">,</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../mocks/postgres'</span><span class="p">));</span>
+<span class="kd">var</span> <span class="nx">userService</span> <span class="o">=</span> <span class="nx">injector</span><span class="p">.</span><span class="nx">inject</span><span class="p">(</span><span class="s1">'userService'</span><span class="p">);</span></code></pre></div>
+
+<h2>The complete module</h2>
+
+<p>I have put all the code together and publish a module here <a href="https://github.com/laoshanlung/injt">https://github.com/laoshanlung/injt</a></p>
+
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    // Required: on line below, replace text in quotes with your forum shortname
+    var disqus_shortname = "tan-nguyen";
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+      </div>
+
+    </body>
+</html>
